@@ -39,28 +39,27 @@ serve(async (req) => {
       );
     }
 
-    // Message text — keep under 160 chars for single SMS
+    // Message — include brand name so receiver recognises sender
     const message =
       `Dear ${name}, your Order #${orderId} for Rs.${amount} is confirmed! ` +
       `Thank you for shopping with Libas Collection, Solapur. ` +
-      `We will deliver soon. - Libas Collection`;
+      `We will deliver soon. -Libas Collection`;
 
-    const smsPayload = new URLSearchParams({
-      authorization: FAST2SMS_KEY,
-      variables_values: message,
-      route: "q",            // Quick / promotional route
-      numbers: cleanPhone,
-    });
-
+    // Fast2SMS bulkV2 — route 'q' (Quick SMS) uses 'message' field
     const smsRes = await fetch(
       "https://www.fast2sms.com/dev/bulkV2",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "cache-control": "no-cache",
+          "authorization": FAST2SMS_KEY,
+          "Content-Type": "application/json",
         },
-        body: smsPayload.toString(),
+        body: JSON.stringify({
+          message,
+          language: "english",
+          route: "q",
+          numbers: cleanPhone,
+        }),
       }
     );
 
