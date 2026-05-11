@@ -168,7 +168,7 @@ function showSuccess(order) {
             <div class="divider"></div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
                 <span class="cinzel" style="font-size:11px;color:#9CA3AF">ORDER ID</span>
-                <span class="cinzel" style="font-weight:700;color:#3B0764">#${order.id.substring(0,8).toUpperCase()}</span>
+                <span class="cinzel" style="font-weight:700;color:#3B0764">#${order.display_order_id || order.id.substring(0,8).toUpperCase()}</span>
             </div>
             <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
                 <span class="cinzel" style="font-size:11px;color:#9CA3AF">TOTAL PAID</span>
