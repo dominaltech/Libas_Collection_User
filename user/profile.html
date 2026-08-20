@@ -677,13 +677,25 @@
       document.getElementById('avatarInitial').textContent = (profile.name || 'L').charAt(0).toUpperCase();
     }
 
+    function getOptimizedImageUrl(url, width = 400, quality = 75) {
+      if (!url || typeof url !== 'string') return '';
+      const cleanUrl = url.trim();
+      if (!cleanUrl) return '';
+      if (cleanUrl.startsWith('data:') || cleanUrl.startsWith('blob:')) return cleanUrl;
+      if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+        if (cleanUrl.includes('wsrv.nl')) return cleanUrl;
+        return `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}&w=${width}&q=${quality}&output=webp`;
+      }
+      return cleanUrl;
+    }
+
     async function loadOrders() {
       const user = await Auth.getUser();
       if (!user) return;
 
       const { data: orders, error } = await sb
         .from('orders')
-        .select('*')
+        .select('id, display_order_id, user_id, items, total_amount, payment_status, order_status, status, shipping_address, customer_name, city, pincode, created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -708,7 +720,7 @@
         const itemsHTML = items.map(it => `
       <div class="order-item-row">
         <div class="order-item-img">
-          ${it.image_url ? `<img src="${it.image_url}" alt="${it.name}" onerror="this.style.display='none'"/>` : '🧵'}
+          ${it.image_url ? `<img src="${getOptimizedImageUrl(it.image_url, 120, 75)}" alt="${it.name}" class="protected-img" style="user-select:none;-webkit-user-drag:none" onerror="this.style.display='none'"/>` : '🧵'}
         </div>
         <div style="flex:1">
           <p style="font-weight:700;font-size:14px;color:#2D1458;margin-bottom:2px">${it.product_no ? `<span style="color:#C9A020;font-size:10px">[${it.product_no}]</span> ` : ''}${it.name || 'Fabric'}</p>
@@ -756,13 +768,13 @@
         </div>
       </div>`;
       }).join('');
-
-      // Subscribe to order status changes in real-time
-      sb.channel('order-updates-' + user.id)
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders', filter: `user_id=eq.${user.id}` },
-          () => loadOrders())
-        .subscribe();
     }
+
+    document.addEventListener('contextmenu', function(e) {
+      if (e.target && (e.target.tagName === 'IMG' || e.target.closest('.order-item-img'))) {
+        e.preventDefault();
+      }
+    });
 
     document.addEventListener('DOMContentLoaded', loadProfile);
   </script>
