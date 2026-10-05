@@ -12,6 +12,14 @@
   ],
   "routes": [
     {
+      "src": "/(.*)",
+      "has": [
+        { "type": "host", "value": "^(www\\.)?libassolapur\\.in$" }
+      ],
+      "status": 301,
+      "headers": { "Location": "https://libassolapur.com/$1" }
+    },
+    {
       "src": "^/((?!user/).*)$",
       "dest": "/user/$1"
     },
